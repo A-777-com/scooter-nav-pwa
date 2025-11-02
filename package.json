@@ -1,7 +1,7 @@
 {
   "name": "scooter-nav-pwa",
   "version": "1.0.0",
-  "homepage": "https://A-777-com.github.io/scooter-nav-pwa",
+  "homepage": "https://a-777-com.github.io/scooter-nav-pwa/",
   "scripts": {
     "dev": "vite",
     "build": "vite build",
