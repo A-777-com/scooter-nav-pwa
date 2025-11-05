@@ -121,7 +121,7 @@ function MapPage() {
         }
       );
     } else {
-      setUserPosition({ lat: 55.7558, lng: 37.6173 });
+      setUserPosition({ lat: 55.884772, lng: 37.651726 });
     }
   }, []);
 
