@@ -1,0 +1,239 @@
+/* ══════════════════════════════════════════════════
+   АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ УСТРОЙСТВ
+   ══════════════════════════════════════════════════ */
+
+/* Общие стили для сенсорных устройств */
+@media (max-width: 768px) {
+  
+  /* Убираем эффекты hover на мобильных */
+  * {
+    -webkit-tap-highlight-color: rgba(74, 144, 226, 0.2);
+    -webkit-touch-callout: none;
+  }
+  
+  /* Увеличиваем базовый шрифт */
+  body {
+    font-size: 16px;
+    line-height: 1.5;
+  }
+  
+  /* Минимальный размер для touch-целей */
+  button, 
+  a, 
+  input[type="button"],
+  input[type="checkbox"],
+  select {
+    min-height: 44px;
+    min-width: 44px;
+  }
+  
+  /* Оптимизация скролла */
+  .scrollable {
+    -webkit-overflow-scrolling: touch;
+    overflow-y: auto;
+  }
+  
+  /* Улучшенная читаемость текста */
+  h1, h2, h3, h4, h5, h6 {
+    text-rendering: optimizeLegibility;
+  }
+  
+  /* Оптимизация input полей */
+  input, textarea, select {
+    font-size: 16px; /* Предотвращает зум на iOS */
+  }
+}
+
+/* Стили для маленьких телефонов */
+@media (max-width: 480px) {
+  
+  body {
+    font-size: 15px;
+  }
+  
+  h1 { font-size: 1.5em; }
+  h2 { font-size: 1.3em; }
+  h3 { font-size: 1.1em; }
+  
+  /* Компактные отступы */
+  .container {
+    padding: 8px;
+  }
+  
+  /* Уменьшенные зазоры */
+  .gap-small {
+    gap: 4px;
+  }
+  
+  .gap-medium {
+    gap: 8px;
+  }
+}
+
+/* Ландшафтная ориентация */
+@media (max-width: 768px) and (orientation: landscape) {
+  
+  /* Уменьшаем высоту панелей в ландшафте */
+  .control-panel,
+  .poi-panel {
+    max-height: 50vh !important;
+    overflow-y: auto;
+  }
+  
+  /* Компактные кнопки */
+  button {
+    padding: 6px 10px;
+    font-size: 13px;
+  }
+}
+
+/* Очень маленькие экраны (< 360px) */
+@media (max-width: 360px) {
+  
+  body {
+    font-size: 14px;
+  }
+  
+  button {
+    font-size: 12px;
+    padding: 8px 10px;
+  }
+  
+  h2 {
+    font-size: 1.1em;
+  }
+  
+  /* Компактные иконки */
+  .emoji {
+    font-size: 20px;
+  }
+}
+
+/* Touch-friendly интерактивные элементы */
+@media (pointer: coarse) {
+  
+  /* Увеличенные зоны нажатия */
+  button, a, label {
+    padding: 12px;
+  }
+  
+  /* Увеличенные чекбоксы */
+  input[type="checkbox"] {
+    width: 22px;
+    height: 22px;
+  }
+  
+  /* Видимая обратная связь при нажатии */
+  button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
+}
+
+/* Оптимизация анимаций на мобильных */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+}
+
+/* Темная тема (если включена в системе) */
+@media (prefers-color-scheme: dark) {
+  
+  /* Можно добавить темную тему позже */
+  /* body {
+    background-color: #1a1a1a;
+    color: #ffffff;
+  } */
+}
+
+/* Safe area для устройств с вырезами (iPhone X+) */
+@supports (padding: env(safe-area-inset-top)) {
+  body {
+    padding-top: env(safe-area-inset-top);
+    padding-bottom: env(safe-area-inset-bottom);
+    padding-left: env(safe-area-inset-left);
+    padding-right: env(safe-area-inset-right);
+  }
+}
+
+/* Оптимизация производительности */
+@media (max-width: 768px) {
+  
+  /* GPU ускорение для плавной анимации */
+  .animated {
+    will-change: transform;
+    transform: translateZ(0);
+    backface-visibility: hidden;
+  }
+  
+  /* Оптимизация рендеринга */
+  .map-container {
+    transform: translateZ(0);
+  }
+}
+
+/* Адаптация для планшетов */
+@media (min-width: 768px) and (max-width: 1024px) {
+  
+  .control-panel {
+    max-width: 500px;
+  }
+  
+  .poi-panel {
+    max-width: 700px;
+  }
+}
+
+/* Скрываем элементы только на мобильных */
+.desktop-only {
+  display: none !important;
+}
+
+@media (min-width: 769px) {
+  .mobile-only {
+    display: none !important;
+  }
+  
+  .desktop-only {
+    display: block !important;
+  }
+}
+@supports (padding: env(safe-area-inset-bottom)) {
+  
+  /* Панель меток с отступом от вырезов */
+  .poi-panel-mobile {
+    padding-bottom: max(10px, env(safe-area-inset-bottom)) !important;
+  }
+  
+  /* Общий отступ снизу для всех панелей */
+  .bottom-panel {
+    margin-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+/* Плавное разворачивание панели */
+@media (max-width: 768px) {
+  
+  /* Убеждаемся, что панель видна */
+  .poi-panel {
+    min-height: 56px;
+    visibility: visible !important;
+  }
+  
+  /* Анимация разворачивания */
+  .panel-expanded {
+    animation: expandPanel 0.3s ease-out;
+  }
+  
+  @keyframes expandPanel {
+    from {
+      max-height: 56px;
+    }
+    to {
+      max-height: 65vh;
+    }
+  }
+}

@@ -1,3 +1,8 @@
+/* ══════════════════════════════════════════════════
+   АНИМАЦИИ И ЭФФЕКТЫ
+   ══════════════════════════════════════════════════ */
+
+/* Пульсирующая метка пользователя */
 .user-location-marker {
   background: transparent;
 }
@@ -27,6 +32,7 @@
   }
 }
 
+/* Waypoint маркеры */
 .waypoint-marker {
   background: transparent;
 }
@@ -45,6 +51,40 @@
   font-size: 14px;
   box-shadow: 0 2px 8px rgba(0,0,0,0.3);
 }
+
+/* Плавное появление элементов */
+.fade-in {
+  animation: fadeIn 0.3s ease-in;
+}
+
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Анимация появления снизу */
+.slide-up {
+  animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+  from {
+    opacity: 0;
+    transform: translateY(20px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Анимация появления слева */
 @keyframes slideInLeft {
   from {
     opacity: 0;
@@ -54,4 +94,134 @@
     opacity: 1;
     transform: translateX(0);
   }
+}
+
+/* Вращение */
+@keyframes rotate {
+  from {
+    transform: rotate(0deg);
+  }
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+.rotating {
+  animation: rotate 2s linear infinite;
+}
+
+/* Мигание */
+@keyframes blink {
+  0%, 50%, 100% {
+    opacity: 1;
+  }
+  25%, 75% {
+    opacity: 0.5;
+  }
+}
+
+.blinking {
+  animation: blink 2s infinite;
+}
+
+/* ══════════════════════════════════════════════════
+   АДАПТАЦИЯ ДЛЯ МОБИЛЬНЫХ
+   ══════════════════════════════════════════════════ */
+
+/* Увеличиваем маркеры на мобильных */
+@media (max-width: 768px) {
+  .waypoint-number {
+    width: 32px;
+    height: 32px;
+    font-size: 16px;
+    border: 2px solid white;
+  }
+  
+  .user-pulse {
+    width: 24px;
+    height: 24px;
+  }
+}
+
+/* Очень маленькие экраны */
+@media (max-width: 360px) {
+  .waypoint-number {
+    width: 28px;
+    height: 28px;
+    font-size: 14px;
+  }
+  
+  .user-pulse {
+    width: 20px;
+    height: 20px;
+  }
+}
+
+/* Оптимизация анимаций на мобильных (экономия батареи) */
+@media (prefers-reduced-motion: reduce) {
+  *, *::before, *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+  }
+  
+  .user-pulse {
+    animation: none;
+    box-shadow: 0 0 0 3px rgba(74, 144, 226, 0.3);
+  }
+}
+
+/* Touch-friendly размеры */
+@media (pointer: coarse) {
+  button, a, input[type="button"], input[type="checkbox"] {
+    min-height: 44px;
+    min-width: 44px;
+  }
+}
+
+/* Скрываем Leaflet controls на очень маленьких экранах */
+@media (max-width: 360px) {
+  .leaflet-control-zoom {
+    display: none !important;
+  }
+}
+/* Плавное разворачивание панели меток */
+@keyframes slideUpPanel {
+  from {
+    transform: translateY(100%);
+  }
+  to {
+    transform: translateY(0);
+  }
+}
+
+/* Touch feedback для кнопок */
+@media (hover: none) and (pointer: coarse) {
+  button:active {
+    transform: scale(0.95);
+    transition: transform 0.1s;
+  }
+}
+
+/* Улучшенная прокрутка на iOS */
+.scrollable-panel {
+  -webkit-overflow-scrolling: touch;
+  overflow-y: auto;
+}
+
+/* Индикатор для свайпа */
+.swipe-indicator {
+  position: relative;
+}
+
+.swipe-indicator::before {
+  content: '';
+  position: absolute;
+  top: 8px;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 40px;
+  height: 4px;
+  background: #ddd;
+  border-radius: 2px;
 }

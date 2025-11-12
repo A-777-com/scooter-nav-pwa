@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { translateInstruction } from '../utils/instructions';
 
 function NavigationPanel({ 
@@ -10,6 +10,16 @@ function NavigationPanel({
   setPoiAlertDistance
 }) {
   const [showSettings, setShowSettings] = useState(false);
+  const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
+  
+  useEffect(() => {
+    const handleResize = () => {
+      setIsMobile(window.innerWidth <= 768);
+    };
+
+    window.addEventListener('resize', handleResize);
+    return () => window.removeEventListener('resize', handleResize);
+  }, []);
   
   const currentStep = steps[currentStepIndex];
   const nextStep = steps[currentStepIndex + 1];
@@ -21,29 +31,51 @@ function NavigationPanel({
       {/* Основная панель навигации */}
       <div style={{
         position: 'absolute',
-        top: '50%',
+        top: isMobile ? '40%' : '50%',
         left: '50%',
         transform: 'translate(-50%, -50%)',
         zIndex: 999,
         background: 'rgba(0,0,0,0.85)',
         color: 'white',
-        padding: 20,
+        padding: isMobile ? 15 : 20,
         borderRadius: 12,
-        maxWidth: 320,
+        maxWidth: isMobile ? '90%' : 320,
+        width: isMobile ? '90%' : 'auto',
         textAlign: 'center',
-        pointerEvents: 'none'
+        pointerEvents: 'none',
+        boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
       }}>
-        <div style={{ fontSize: 48, marginBottom: 10 }}>
+        <div style={{ 
+          fontSize: isMobile ? 40 : 48, 
+          marginBottom: 10,
+          animation: 'fadeIn 0.3s ease-in'
+        }}>
           {getDirectionArrow(currentStep.instruction)}
         </div>
-        <div style={{ fontSize: 18, fontWeight: 'bold', marginBottom: 10 }}>
+        
+        <div style={{ 
+          fontSize: isMobile ? 16 : 18, 
+          fontWeight: 'bold', 
+          marginBottom: 10,
+          lineHeight: 1.3
+        }}>
           {translateInstruction(currentStep.instruction)}
         </div>
-        <div style={{ fontSize: 14, opacity: 0.9 }}>
+        
+        <div style={{ 
+          fontSize: isMobile ? 13 : 14, 
+          opacity: 0.9 
+        }}>
           📏 {currentStep.distance ? `${currentStep.distance.toFixed(0)} м` : ''}
         </div>
+        
         {nextStep && (
-          <div style={{ marginTop: 15, fontSize: 13, opacity: 0.7 }}>
+          <div style={{ 
+            marginTop: 15, 
+            fontSize: isMobile ? 12 : 13, 
+            opacity: 0.7,
+            lineHeight: 1.3
+          }}>
             Затем: {translateInstruction(nextStep.instruction)}
           </div>
         )}
@@ -54,19 +86,25 @@ function NavigationPanel({
         onClick={() => setShowSettings(!showSettings)}
         style={{
           position: 'absolute',
-          top: 200,
+          top: isMobile ? 150 : 200,
           right: 10,
           zIndex: 1000,
           background: 'rgba(0,0,0,0.7)',
           color: 'white',
           border: 'none',
           borderRadius: '50%',
-          width: 50,
-          height: 50,
-          fontSize: 24,
+          width: isMobile ? 44 : 50,
+          height: isMobile ? 44 : 50,
+          fontSize: isMobile ? 20 : 24,
           cursor: 'pointer',
-          pointerEvents: 'auto'
+          pointerEvents: 'auto',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          transition: 'all 0.2s'
         }}
+        aria-label="Настройки навигации"
       >
         ⚙️
       </button>
@@ -75,17 +113,25 @@ function NavigationPanel({
       {showSettings && (
         <div style={{
           position: 'absolute',
-          top: 260,
+          top: isMobile ? 200 : 260,
           right: 10,
+          left: isMobile ? 10 : 'auto',
           zIndex: 1000,
           background: 'white',
-          padding: 15,
+          padding: isMobile ? 12 : 15,
           borderRadius: 12,
           boxShadow: '0 4px 12px rgba(0,0,0,0.3)',
-          minWidth: 250,
-          pointerEvents: 'auto'
+          minWidth: isMobile ? 'auto' : 250,
+          maxWidth: isMobile ? 'calc(100% - 20px)' : 300,
+          pointerEvents: 'auto',
+          animation: 'slideInLeft 0.3s ease-out'
         }}>
-          <h3 style={{ margin: '0 0 15px 0', fontSize: 16, color: '#333' }}>
+          <h3 style={{ 
+            margin: '0 0 15px 0', 
+            fontSize: isMobile ? 15 : 16, 
+            color: '#333',
+            fontWeight: 'bold'
+          }}>
             🔊 Настройки голоса
           </h3>
 
@@ -96,7 +142,9 @@ function NavigationPanel({
             gap: 10,
             marginBottom: 15,
             cursor: 'pointer',
-            fontSize: 14
+            fontSize: isMobile ? 13 : 14,
+            minHeight: 44,
+            padding: '8px 0'
           }}>
             <input
               type="checkbox"
@@ -105,7 +153,8 @@ function NavigationPanel({
               style={{
                 width: 20,
                 height: 20,
-                cursor: 'pointer'
+                cursor: 'pointer',
+                minWidth: 20
               }}
             />
             <span>Голосовые подсказки о метках</span>
@@ -114,23 +163,40 @@ function NavigationPanel({
           {/* Настройка расстояния */}
           {voiceAssistantEnabled && (
             <div>
-              <label style={{ fontSize: 14, color: '#666', display: 'block', marginBottom: 8 }}>
+              <label style={{ 
+                fontSize: isMobile ? 13 : 14, 
+                color: '#666', 
+                display: 'block', 
+                marginBottom: 8,
+                fontWeight: '500'
+              }}>
                 Оповещать за:
               </label>
-              <div style={{ display: 'flex', gap: 8, marginBottom: 10 }}>
+              
+              <div style={{ 
+                display: 'flex', 
+                gap: 8, 
+                marginBottom: 10 
+              }}>
                 {[20, 30, 50].map(distance => (
                   <button
                     key={distance}
                     onClick={() => setPoiAlertDistance(distance)}
                     style={{
                       flex: 1,
-                      padding: '8px',
+                      padding: isMobile ? '10px' : '8px',
                       borderRadius: 6,
-                      border: poiAlertDistance === distance ? '2px solid #4A90E2' : '2px solid #ddd',
-                      background: poiAlertDistance === distance ? '#E3F2FD' : 'white',
+                      border: poiAlertDistance === distance 
+                        ? '2px solid #4A90E2' 
+                        : '2px solid #ddd',
+                      background: poiAlertDistance === distance 
+                        ? '#E3F2FD' 
+                        : 'white',
                       cursor: 'pointer',
-                      fontSize: 13,
-                      fontWeight: 'bold'
+                      fontSize: isMobile ? 12 : 13,
+                      fontWeight: 'bold',
+                      minHeight: 44,
+                      transition: 'all 0.2s'
                     }}
                   >
                     {distance}м
@@ -138,7 +204,13 @@ function NavigationPanel({
                 ))}
               </div>
 
-              <div style={{ fontSize: 11, color: '#999', fontStyle: 'italic', marginTop: 8 }}>
+              <div style={{ 
+                fontSize: 11, 
+                color: '#999', 
+                fontStyle: 'italic', 
+                marginTop: 8,
+                textAlign: 'center'
+              }}>
                 {poiAlertDistance === 20 && '⚡ Только для опытных'}
                 {poiAlertDistance === 30 && '👍 Рекомендуется'}
                 {poiAlertDistance === 50 && '🐌 Заранее предупреждать'}
@@ -151,14 +223,16 @@ function NavigationPanel({
             onClick={() => setShowSettings(false)}
             style={{
               width: '100%',
-              padding: '10px',
+              padding: isMobile ? 12 : 10,
               marginTop: 15,
               borderRadius: 6,
               border: 'none',
               background: '#f5f5f5',
               cursor: 'pointer',
-              fontSize: 14,
-              fontWeight: 'bold'
+              fontSize: isMobile ? 13 : 14,
+              fontWeight: 'bold',
+              minHeight: 44,
+              color: '#333'
             }}
           >
             ✓ Закрыть
