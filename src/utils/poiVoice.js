@@ -61,20 +61,70 @@ const POI_PRIORITY = {
  * @returns {string} Текст для озвучки
  */
 export function getPOIVoiceMessage(poiType, distance) {
-  const messages = POI_VOICE_MESSAGES[poiType];
+  const distanceRounded = Math.round(distance);
+  
+  // Формируем сообщения с расстоянием и рекомендациями
+  const messagesWithAdvice = {
+    'crosswalk': [
+      `Через ${distanceRounded} метров пешеходный переход, будьте внимательны`,
+      `Через ${distanceRounded} метров переход через дорогу, снизьте скорость`,
+      `Приближаетесь к пешеходному переходу через ${distanceRounded} метров, следите за пешеходами`
+    ],
+    
+    'traffic-light': [
+      `Через ${distanceRounded} метров светофор, следите за сигналом`,
+      `Через ${distanceRounded} метров светофор, будьте готовы остановиться`,
+      `Впереди светофор через ${distanceRounded} метров, обратите внимание на сигнал`
+    ],
+    
+    'bike-lane': [
+      `Через ${distanceRounded} метров велодорожка, можно перестроиться`,
+      `Через ${distanceRounded} метров велодорожка, безопасный путь впереди`,
+      `Впереди велодорожка через ${distanceRounded} метров, рекомендуется использовать`
+    ],
+    
+    'high-curb': [
+      `Внимание! Через ${distanceRounded} метров высокий бордюр, будьте осторожны`,
+      `Осторожно! Через ${distanceRounded} метров высокий бордюр, снизьте скорость`,
+      `Высокий бордюр через ${distanceRounded} метров, будьте внимательны при проезде`
+    ],
+    
+    'bike-parking': [
+      `Через ${distanceRounded} метров парковка для самокатов`,
+      `Впереди парковка через ${distanceRounded} метров, можно оставить самокат`,
+      `Парковка для самокатов через ${distanceRounded} метров`
+    ],
+    
+    'good-surface': [
+      `Через ${distanceRounded} метров хорошее покрытие, можно ускориться`,
+      `Впереди хорошее покрытие через ${distanceRounded} метров`,
+      `Дорога становится лучше через ${distanceRounded} метров`
+    ],
+    
+    'bad-surface': [
+      `Внимание! Через ${distanceRounded} метров плохое покрытие, снизьте скорость`,
+      `Осторожно! Через ${distanceRounded} метров плохая дорога, будьте внимательны`,
+      `Плохое покрытие через ${distanceRounded} метров, рекомендуется снизить скорость`
+    ]
+  };
+  
+  const messages = messagesWithAdvice[poiType] || POI_VOICE_MESSAGES[poiType];
   
   if (!messages || messages.length === 0) {
-    return `Впереди метка`;
+    return `Впереди метка через ${distanceRounded} метров`;
   }
   
-  // Выбираем случайное сообщение для разнообразия
-  const randomIndex = Math.floor(Math.random() * messages.length);
-  let message = messages[randomIndex];
-  
-  // Добавляем расстояние для важных меток
-  const priority = POI_PRIORITY[poiType] || 0;
-  if (priority >= 8 && distance < 50) {
-    message += ` через ${Math.round(distance)} метров`;
+  // Выбираем сообщение в зависимости от расстояния
+  let message;
+  if (distanceRounded <= 15) {
+    // Очень близко - используем первое сообщение (более срочное)
+    message = messages[0] || messages[Math.floor(Math.random() * messages.length)];
+  } else if (distanceRounded <= 30) {
+    // Средняя дистанция
+    message = messages[1] || messages[0] || messages[Math.floor(Math.random() * messages.length)];
+  } else {
+    // Далеко - используем третье или случайное
+    message = messages[2] || messages[Math.floor(Math.random() * messages.length)];
   }
   
   return message;

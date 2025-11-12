@@ -10,6 +10,7 @@ function NavigationPanel({
   setPoiAlertDistance
 }) {
   const [showSettings, setShowSettings] = useState(false);
+  const [isCollapsed, setIsCollapsed] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
   
   useEffect(() => {
@@ -28,23 +29,53 @@ function NavigationPanel({
   
   return (
     <>
+      {/* Кнопка сворачивания/разворачивания */}
+      <button
+        onClick={() => setIsCollapsed(!isCollapsed)}
+        style={{
+          position: 'absolute',
+          top: isMobile ? 10 : 10,
+          right: isMobile ? 10 : 10,
+          zIndex: 1001,
+          background: 'rgba(0,0,0,0.7)',
+          color: 'white',
+          border: 'none',
+          borderRadius: '50%',
+          width: isMobile ? 44 : 50,
+          height: isMobile ? 44 : 50,
+          fontSize: isMobile ? 20 : 24,
+          cursor: 'pointer',
+          display: 'flex',
+          alignItems: 'center',
+          justifyContent: 'center',
+          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+          transition: 'all 0.2s',
+          pointerEvents: 'auto'
+        }}
+        aria-label={isCollapsed ? "Развернуть навигацию" : "Свернуть навигацию"}
+        title={isCollapsed ? "Развернуть навигацию" : "Свернуть навигацию"}
+      >
+        {isCollapsed ? '👁️' : '▼'}
+      </button>
+
       {/* Основная панель навигации */}
-      <div style={{
-        position: 'absolute',
-        top: isMobile ? '40%' : '50%',
-        left: '50%',
-        transform: 'translate(-50%, -50%)',
-        zIndex: 999,
-        background: 'rgba(0,0,0,0.85)',
-        color: 'white',
-        padding: isMobile ? 15 : 20,
-        borderRadius: 12,
-        maxWidth: isMobile ? '90%' : 320,
-        width: isMobile ? '90%' : 'auto',
-        textAlign: 'center',
-        pointerEvents: 'none',
-        boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
-      }}>
+      {!isCollapsed && (
+        <div style={{
+          position: 'absolute',
+          top: isMobile ? '40%' : '50%',
+          left: '50%',
+          transform: 'translate(-50%, -50%)',
+          zIndex: 999,
+          background: 'rgba(0,0,0,0.85)',
+          color: 'white',
+          padding: isMobile ? 15 : 20,
+          borderRadius: 12,
+          maxWidth: isMobile ? '90%' : 320,
+          width: isMobile ? '90%' : 'auto',
+          textAlign: 'center',
+          pointerEvents: 'auto',
+          boxShadow: '0 4px 20px rgba(0,0,0,0.5)'
+        }}>
         <div style={{ 
           fontSize: isMobile ? 40 : 48, 
           marginBottom: 10,
@@ -79,38 +110,41 @@ function NavigationPanel({
             Затем: {translateInstruction(nextStep.instruction)}
           </div>
         )}
-      </div>
+        </div>
+      )}
 
-      {/* Кнопка настроек */}
-      <button
-        onClick={() => setShowSettings(!showSettings)}
-        style={{
-          position: 'absolute',
-          top: isMobile ? 150 : 200,
-          right: 10,
-          zIndex: 1000,
-          background: 'rgba(0,0,0,0.7)',
-          color: 'white',
-          border: 'none',
-          borderRadius: '50%',
-          width: isMobile ? 44 : 50,
-          height: isMobile ? 44 : 50,
-          fontSize: isMobile ? 20 : 24,
-          cursor: 'pointer',
-          pointerEvents: 'auto',
-          display: 'flex',
-          alignItems: 'center',
-          justifyContent: 'center',
-          boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
-          transition: 'all 0.2s'
-        }}
-        aria-label="Настройки навигации"
-      >
-        ⚙️
-      </button>
+      {/* Кнопка настроек (только когда панель развёрнута) */}
+      {!isCollapsed && (
+        <button
+          onClick={() => setShowSettings(!showSettings)}
+          style={{
+            position: 'absolute',
+            top: isMobile ? 150 : 200,
+            right: 10,
+            zIndex: 1000,
+            background: 'rgba(0,0,0,0.7)',
+            color: 'white',
+            border: 'none',
+            borderRadius: '50%',
+            width: isMobile ? 44 : 50,
+            height: isMobile ? 44 : 50,
+            fontSize: isMobile ? 20 : 24,
+            cursor: 'pointer',
+            pointerEvents: 'auto',
+            display: 'flex',
+            alignItems: 'center',
+            justifyContent: 'center',
+            boxShadow: '0 2px 8px rgba(0,0,0,0.3)',
+            transition: 'all 0.2s'
+          }}
+          aria-label="Настройки навигации"
+        >
+          ⚙️
+        </button>
+      )}
 
-      {/* Панель настроек */}
-      {showSettings && (
+      {/* Панель настроек (только когда основная панель развёрнута) */}
+      {!isCollapsed && showSettings && (
         <div style={{
           position: 'absolute',
           top: isMobile ? 200 : 260,
@@ -244,11 +278,34 @@ function NavigationPanel({
 }
 
 function getDirectionArrow(instruction) {
+  if (!instruction) return '⬆️';
+  
   const lower = instruction.toLowerCase();
-  if (lower.includes('left')) return '⬅️';
-  if (lower.includes('right')) return '➡️';
-  if (lower.includes('straight') || lower.includes('continue')) return '⬆️';
+  
+  // Прибытие
   if (lower.includes('arrive') || lower.includes('destination')) return '🏁';
+  
+  // Повороты
+  if (lower.includes('turn left') || lower.includes('bear left') || lower.includes('keep left')) return '⬅️';
+  if (lower.includes('turn right') || lower.includes('bear right') || lower.includes('keep right')) return '➡️';
+  
+  // Разворот
+  if (lower.includes('uturn') || lower.includes('u-turn')) return '↩️';
+  
+  // Направления движения (Head)
+  if (lower.includes('head northeast') || lower.includes('northeast')) return '↗️';
+  if (lower.includes('head northwest') || lower.includes('northwest')) return '↖️';
+  if (lower.includes('head southeast') || lower.includes('southeast')) return '↘️';
+  if (lower.includes('head southwest') || lower.includes('southwest')) return '↙️';
+  if (lower.includes('head north') || lower.includes(' north')) return '⬆️';
+  if (lower.includes('head south') || lower.includes(' south')) return '⬇️';
+  if (lower.includes('head east') || lower.includes(' east')) return '➡️';
+  if (lower.includes('head west') || lower.includes(' west')) return '⬅️';
+  
+  // Прямо
+  if (lower.includes('straight') || lower.includes('continue') || lower.includes('go straight')) return '⬆️';
+  
+  // По умолчанию
   return '⬆️';
 }
 

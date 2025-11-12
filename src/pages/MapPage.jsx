@@ -273,25 +273,96 @@ function MapPage() {
     if (!nextStep || !nextStep.maneuver) return;
     
     const stepLocation = nextStep.maneuver.location;
-    const distance = calculateDistance(
+    const distanceKm = calculateDistance(
       currentPos.lat,
       currentPos.lng,
       stepLocation[1],
       stepLocation[0]
     );
+    const distanceM = Math.round(distanceKm * 1000);
     
-    // Если ближе 10 метров и ещё не объявлено
-    if (distance < 0.01 && !announcedStepsRef.current.has(currentStepIndex)) {
-      const instruction = translateInstruction(nextStep.instruction);
-      speak(instruction);
-      announcedStepsRef.current.add(currentStepIndex);
+    const instruction = translateInstruction(nextStep.instruction);
+    const stepKey = `step_${currentStepIndex}`;
+    const warningKey = `warning_${currentStepIndex}`;
+    const actionKey = `action_${currentStepIndex}`;
+    
+    // Предварительное предупреждение за 50-100 метров
+    if (distanceM >= 50 && distanceM <= 100 && !announcedStepsRef.current.has(warningKey)) {
+      let warningMessage = '';
       
-      console.log('🔊 Озвучен шаг', currentStepIndex, ':', instruction);
+      // Определяем направление движения до маневра
+      if (instruction.includes('налево') || instruction.includes('влево')) {
+        warningMessage = `Двигайтесь вперед и через ${distanceM} метров поверните налево`;
+      } else if (instruction.includes('направо') || instruction.includes('вправо')) {
+        warningMessage = `Двигайтесь вперед и через ${distanceM} метров поверните направо`;
+      } else if (instruction.includes('развернитесь') || instruction.includes('разворот')) {
+        warningMessage = `Двигайтесь вперед и через ${distanceM} метров выполните разворот`;
+      } else if (instruction.includes('прямо') || instruction.includes('продолжайте')) {
+        warningMessage = `Продолжайте движение прямо еще ${distanceM} метров`;
+      } else {
+        warningMessage = `Двигайтесь вперед и через ${distanceM} метров ${instruction.toLowerCase()}`;
+      }
       
-      // Переход к следующему шагу
+      speak(warningMessage);
+      announcedStepsRef.current.add(warningKey);
+      console.log('🔊 [НАВИГАЦИЯ] Предупреждение:', warningMessage);
+    }
+    
+    // Финальная подсказка за 10-20 метров
+    if (distanceM >= 10 && distanceM <= 20 && !announcedStepsRef.current.has(actionKey)) {
+      let actionMessage = '';
+      
+      if (instruction.includes('налево') || instruction.includes('влево')) {
+        actionMessage = `Через ${distanceM} метров поверните налево`;
+      } else if (instruction.includes('направо') || instruction.includes('вправо')) {
+        actionMessage = `Через ${distanceM} метров поверните направо`;
+      } else if (instruction.includes('развернитесь') || instruction.includes('разворот')) {
+        actionMessage = `Через ${distanceM} метров выполните разворот`;
+      } else {
+        actionMessage = `Через ${distanceM} метров ${instruction.toLowerCase()}`;
+      }
+      
+      speak(actionMessage);
+      announcedStepsRef.current.add(actionKey);
+      console.log('🔊 [НАВИГАЦИЯ] Подготовка:', actionMessage);
+    }
+    
+    // Выполнение маневра (когда очень близко - 5-10 метров)
+    if (distanceM >= 5 && distanceM < 10 && !announcedStepsRef.current.has(stepKey)) {
+      let maneuverMessage = instruction;
+      
+      // Улучшаем формулировку для немедленного действия
+      if (instruction.includes('налево') || instruction.includes('влево')) {
+        maneuverMessage = 'Поверните налево';
+      } else if (instruction.includes('направо') || instruction.includes('вправо')) {
+        maneuverMessage = 'Поверните направо';
+      } else if (instruction.includes('развернитесь') || instruction.includes('разворот')) {
+        maneuverMessage = 'Выполните разворот';
+      } else if (instruction.includes('прямо') || instruction.includes('продолжайте')) {
+        maneuverMessage = 'Продолжайте движение прямо';
+      }
+      
+      speak(maneuverMessage);
+      announcedStepsRef.current.add(stepKey);
+      console.log('🔊 [НАВИГАЦИЯ] Маневр:', maneuverMessage);
+      
+      // Переход к следующему шагу через небольшую задержку
       setTimeout(() => {
         setCurrentStepIndex(prev => prev + 1);
-      }, 3000);
+      }, 2000);
+    }
+    
+    // Если прошли точку маневра (расстояние уменьшилось после объявления)
+    if (distanceM < 5 && announcedStepsRef.current.has(stepKey)) {
+      // Переходим к следующему шагу
+      setTimeout(() => {
+        setCurrentStepIndex(prev => {
+          if (prev < route.steps.length - 1) {
+            return prev + 1;
+          }
+          return prev;
+        });
+      }, 1000);
     }
   };
 
@@ -512,7 +583,28 @@ function MapPage() {
 
     } catch (error) {
       console.error('💥 [MAP] Ошибка построения маршрута:', error);
-      alert('❌ Ошибка построения маршрута:\n\n' + error.message);
+      
+      // Переводим сообщения об ошибках на русский
+      let errorMessage = 'Неизвестная ошибка';
+      const errorMsg = error.message || error.toString();
+      
+      if (errorMsg.includes('API ключ') || errorMsg.includes('API key')) {
+        errorMessage = 'API ключ не настроен';
+      } else if (errorMsg.includes('лимит') || errorMsg.includes('limit') || errorMsg.includes('403')) {
+        errorMessage = 'Превышен лимит запросов. Попробуйте позже.';
+      } else if (errorMsg.includes('не найден') || errorMsg.includes('not found') || errorMsg.includes('404')) {
+        errorMessage = 'Маршрут не найден между этими точками';
+      } else if (errorMsg.includes('сервер') || errorMsg.includes('server') || errorMsg.includes('500')) {
+        errorMessage = 'Ошибка сервера. Попробуйте другие точки.';
+      } else if (errorMsg.includes('Неверный формат') || errorMsg.includes('Invalid')) {
+        errorMessage = 'Неверный формат данных';
+      } else if (errorMsg.includes('Нужно минимум')) {
+        errorMessage = errorMsg;
+      } else {
+        errorMessage = 'Не удалось построить маршрут. Проверьте точки и попробуйте снова.';
+      }
+      
+      alert('❌ Ошибка построения маршрута:\n\n' + errorMessage);
     }
   };
 
@@ -531,7 +623,12 @@ function MapPage() {
     announcedStepsRef.current.clear();
     announcedPOIsRef.current.clear();
     
-    speak('Навигация началась. Следуйте инструкциям.');
+    // Озвучиваем начальное сообщение с информацией о маршруте
+    const routeInfoText = routeInfo 
+      ? `Навигация началась. Расстояние ${routeInfo.distance} километров, время в пути ${routeInfo.duration} минут. Следуйте голосовым подсказкам.`
+      : 'Навигация началась. Следуйте голосовым подсказкам.';
+    
+    speak(routeInfoText);
     console.log('▶️ Навигация началась');
   };
 

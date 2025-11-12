@@ -11,18 +11,13 @@ const POI_TYPES = [
 ];
 
 function POIPanel({ onAddPOI, isAddingPOI, selectedPOIType, markersCount, onClearMarkers }) {
-  // На мобильных по умолчанию свернута, на десктопе развёрнута
+  // По умолчанию свернута на всех устройствах
   const [isExpanded, setIsExpanded] = useState(false);
   const [isMobile, setIsMobile] = useState(window.innerWidth <= 768);
 
   useEffect(() => {
     const handleResize = () => {
-      const mobile = window.innerWidth <= 768;
-      setIsMobile(mobile);
-      // На десктопе всегда развёрнута
-      if (!mobile) {
-        setIsExpanded(true);
-      }
+      setIsMobile(window.innerWidth <= 768);
     };
 
     handleResize();
@@ -43,7 +38,7 @@ function POIPanel({ onAddPOI, isAddingPOI, selectedPOIType, markersCount, onClea
       zIndex: 1000,
       background: 'white',
       borderRadius: isMobile ? '16px 16px 0 0' : 12,
-      boxShadow: '0 -2px 16px rgba(0,0,0,0.25)',
+      boxShadow: isExpanded ? '0 -2px 16px rgba(0,0,0,0.25)' : '0 -2px 8px rgba(0,0,0,0.1)',
       maxWidth: isMobile ? '100%' : 600,
       margin: isMobile ? 0 : '0 auto',
       // ИСПРАВЛЕНО: Используем max-height вместо transform
@@ -52,7 +47,9 @@ function POIPanel({ onAddPOI, isAddingPOI, selectedPOIType, markersCount, onClea
       transition: 'max-height 0.3s ease-out, box-shadow 0.3s ease',
       WebkitOverflowScrolling: 'touch',
       // Safe area для iPhone с вырезом
-      paddingBottom: isMobile ? 'max(10px, env(safe-area-inset-bottom))' : 0
+      paddingBottom: isMobile ? 'max(10px, env(safe-area-inset-bottom))' : 0,
+      // В свёрнутом состоянии панель не должна блокировать карту
+      pointerEvents: 'auto'
     }}>
       
       {/* Индикатор свайпа на мобильных */}
@@ -74,13 +71,13 @@ function POIPanel({ onAddPOI, isAddingPOI, selectedPOIType, markersCount, onClea
 
       {/* Заголовок с кнопкой сворачивания */}
       <div 
-        onClick={() => isMobile && setIsExpanded(!isExpanded)}
+        onClick={() => setIsExpanded(!isExpanded)}
         style={{ 
           display: 'flex', 
           justifyContent: 'space-between', 
           alignItems: 'center',
           padding: isMobile ? '8px 15px 12px' : '12px',
-          cursor: isMobile ? 'pointer' : 'default',
+          cursor: 'pointer',
           background: 'white',
           userSelect: 'none',
           borderBottom: isExpanded ? '1px solid #eee' : 'none'
@@ -137,22 +134,21 @@ function POIPanel({ onAddPOI, isAddingPOI, selectedPOIType, markersCount, onClea
             </button>
           )}
 
-          {/* Кнопка разворачивания на мобильных */}
-          {isMobile && (
-            <div style={{
-              background: '#E3F2FD',
-              borderRadius: 6,
-              padding: '4px 12px',
-              fontSize: 12,
-              fontWeight: 'bold',
-              color: '#4A90E2',
-              display: 'flex',
-              alignItems: 'center',
-              gap: 4
-            }}>
-              {isExpanded ? '▼ Свернуть' : '▲ Открыть'}
-            </div>
-          )}
+          {/* Кнопка разворачивания (на всех устройствах) */}
+          <div style={{
+            background: '#E3F2FD',
+            borderRadius: 6,
+            padding: '4px 12px',
+            fontSize: 12,
+            fontWeight: 'bold',
+            color: '#4A90E2',
+            display: 'flex',
+            alignItems: 'center',
+            gap: 4,
+            minHeight: 32
+          }}>
+            {isExpanded ? '▼ Свернуть' : '▲ Открыть'}
+          </div>
         </div>
       </div>
 

@@ -72,7 +72,20 @@ export async function getRoute(points, profile = 'foot-walking') {
         throw new Error('⚠️ Ошибка сервера ORS. Попробуйте другие точки');
       }
       
-      throw new Error(`API ошибка ${response.status}: ${errorText}`);
+      // Пытаемся извлечь понятное сообщение об ошибке
+      let errorMsg = `Ошибка API (код ${response.status})`;
+      try {
+        const errorJson = JSON.parse(errorText);
+        if (errorJson.error && errorJson.error.message) {
+          errorMsg = errorJson.error.message;
+        }
+      } catch (e) {
+        // Если не JSON, используем текст как есть
+        if (errorText && errorText.length < 100) {
+          errorMsg = errorText;
+        }
+      }
+      throw new Error(errorMsg);
     }
 
     const data = await response.json();
